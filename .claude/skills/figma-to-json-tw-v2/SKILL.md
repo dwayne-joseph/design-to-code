@@ -118,30 +118,43 @@ JSX collection uses a hybrid strategy: try one call per breakpoint, fall back to
 
 **Step 1 — Attempt frame-level JSX (two calls).** Always pass `excludeScreenshot: true` on every `get_design_context` call in this skill. The per-section screenshots from Phase 1 are already at the right resolution for Phase 3c; the embedded screenshot `get_design_context` returns by default is redundant and burns context.
 
+**Before every `get_design_context` call, write an intent file** so the PostToolUse hook knows where to save the JSX. The hook handles the file write automatically — do NOT use the Write tool for JSX files.
+
+For frame-level calls, include `checkNodeIds` (the section node IDs enumerated in Phase 1) so the hook can check completeness and report `missingNodeIds` back immediately:
+
+```bash
+# Desktop frame
+echo '{
+  "saveTo":       "{work}/jsx/frame-desktop.jsx",
+  "workDir":      "{work}",
+  "checkNodeIds": ["<section-1-desktop-id>", "<section-2-desktop-id>", ...]
+}' > /tmp/figma-next-jsx.json
+Figma:get_design_context(nodeId=<desktop frame id>, excludeScreenshot=true)
+
+# Mobile frame
+echo '{
+  "saveTo":       "{work}/jsx/frame-mobile.jsx",
+  "workDir":      "{work}",
+  "checkNodeIds": ["<section-1-mobile-id>", "<section-2-mobile-id>", ...]
+}' > /tmp/figma-next-jsx.json
+Figma:get_design_context(nodeId=<mobile frame id>, excludeScreenshot=true)
 ```
-Figma:get_design_context(nodeId=<desktop frame id>, excludeScreenshot=true) → {work}/jsx/frame-desktop.jsx
-Figma:get_design_context(nodeId=<mobile frame id>,  excludeScreenshot=true) → {work}/jsx/frame-mobile.jsx
-```
 
-**Step 2 — Validate each frame response.** A frame call is successful only if ALL hold:
+**Step 2 — Validate each frame response.** The hook reports results in `hookSpecificOutput` immediately after each call. A frame call is successful only if ALL hold:
 
-- Response contains JSX code (not just metadata). Figma returns metadata-only when the output is too large.
-- File is not truncated mid-element (look for unclosed tags at EOF).
-- Every section node ID from Phase 1 appears as a `data-node-id="{id}"` attribute somewhere in the JSX:
+- `hookSpecificOutput.size` is non-zero (response contained JSX, not just metadata).
+- `hookSpecificOutput.truncated` is `false` (all expected section node IDs were found).
 
-```
-for id in <list of section nodeIds for this breakpoint>; do
-  grep -q "data-node-id=\"$id\"" {work}/jsx/frame-{breakpoint}.jsx || echo "MISSING: $id"
-done
-```
+If `truncated` is `true`, `hookSpecificOutput.missingNodeIds` lists exactly which IDs were absent — no grep needed. Breakpoints are checked independently — desktop may succeed while mobile fails.
 
-If any section ID is missing from a frame's JSX, that breakpoint failed and needs per-section fallback. Breakpoints are checked independently — desktop may succeed while mobile fails.
+**Step 3 — Per-section fallback for failed breakpoints.** For each breakpoint that failed validation, delete its `frame-{breakpoint}.jsx` and fetch per-section instead. Write an intent file before each call (no `checkNodeIds` needed for per-section calls):
 
-**Step 3 — Per-section fallback for failed breakpoints.** For each breakpoint that failed validation, delete its `frame-{breakpoint}.jsx` and fetch per-section instead:
-
-```
+```bash
+echo '{
+  "saveTo":  "{work}/jsx/section-{N}-{breakpoint}.jsx",
+  "workDir": "{work}"
+}' > /tmp/figma-next-jsx.json
 Figma:get_design_context(nodeId=<section id at this breakpoint>, excludeScreenshot=true)
-  → {work}/jsx/section-{N}-{breakpoint}.jsx
 ```
 
 If desktop succeeded but mobile failed (common — mobile frames are taller and hit the size limit first), only loop on mobile. Still cuts JSX calls roughly in half versus always going per-section.
@@ -155,7 +168,7 @@ echo "mobile: frame" >> {work}/jsx/.strategy   # or "mobile: per-section"
 
 **Why try frame-first.** Many emails return clean frame-level JSX with every section's node ID intact, especially short ones or designs without dense section content. Passing `excludeScreenshot: true` frees up response budget that would otherwise go to a thumbnail we don't need, which raises the size ceiling for the JSX itself. Cost of trying: two calls. Cost of being wrong: detected by Step 2 and recovered by Step 3 without losing any precision.
 
-Do NOT run `.claude/skills/figma-to-json-tw-v2/scripts/resolve-tailwind.sh` during Phase 2. Do NOT author any JSON. The only goal is to land JSX on disk.
+Do NOT run `.claude/skills/figma-to-json-tw-v2/scripts/resolve-tailwind.sh` during Phase 2. Do NOT use the Write tool for JSX files — the hook handles all saves. The only goal is to land JSX on disk via the hook.
 
 ### Phase 3a — Resolve Tailwind (one shell command)
 
@@ -170,6 +183,8 @@ Produces:
 - `{work}/jsx/decoded.css` — Tailwind-resolved stylesheet for every class used
 - `{work}/jsx/frame-{breakpoint}.inlined.jsx` — for breakpoints that used frame-level
 - `{work}/jsx/section-{N}-{breakpoint}.inlined.jsx` — for breakpoints that fell back to per-section
+
+**Re-runs:** on a second pass of the same email, `decoded.css` already exists. The hook will have run `inline-styles.py` on each JSX file as it arrived, so some or all `.inlined.jsx` files may already be present. Run the resolver anyway — it is idempotent and will catch any files the hook missed.
 
 Watch stderr for an `unresolved classes` count. Zero is expected. Any non-zero: capture each unresolved class as a `meta.openQuestions` entry during planning.
 

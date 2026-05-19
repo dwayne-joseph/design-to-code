@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "mcp__3840397b-1afc-4761-a23a-6a2f06d440ad__get_design_context",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/save-design-context.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
