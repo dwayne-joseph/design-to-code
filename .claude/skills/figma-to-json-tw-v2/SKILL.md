@@ -21,7 +21,7 @@ The flow:
 
 ## Two roles in this skill
 
-- **`scripts/resolve-tailwind.sh`** does the mechanical Tailwind decoding: runs the real Tailwind CLI over every section's JSX once, then rewrites each `className="..."` as a fully-resolved `style={{...}}` block. Output: one `.inlined.jsx` file per input with every CSS property already computed.
+- **`.claude/skills/figma-to-json-tw-v2/scripts/resolve-tailwind.sh`** does the mechanical Tailwind decoding: runs the real Tailwind CLI over every section's JSX once, then rewrites each `className="..."` as a fully-resolved `style={{...}}` block. Output: one `.inlined.jsx` file per input with every CSS property already computed.
 - **Claude** does the visual interpretation and judgment: identifying structural patterns from screenshots, classifying overlays, transcribing text precisely, naming columns, deciding mobile behavior, locking in decisions in a written plan.
 
 The skill assumes the Tailwind CLI is available at the path resolved by `resolve-tailwind.sh`. If that dependency disappears, the script fails loudly — there is no fallback to inline decoding. If the CLI isn't available, use the original `figma-to-json` skill instead.
@@ -155,12 +155,12 @@ echo "mobile: frame" >> {work}/jsx/.strategy   # or "mobile: per-section"
 
 **Why try frame-first.** Many emails return clean frame-level JSX with every section's node ID intact, especially short ones or designs without dense section content. Passing `excludeScreenshot: true` frees up response budget that would otherwise go to a thumbnail we don't need, which raises the size ceiling for the JSX itself. Cost of trying: two calls. Cost of being wrong: detected by Step 2 and recovered by Step 3 without losing any precision.
 
-Do NOT run `resolve-tailwind.sh` during Phase 2. Do NOT author any JSON. The only goal is to land JSX on disk.
+Do NOT run `.claude/skills/figma-to-json-tw-v2/scripts/resolve-tailwind.sh` during Phase 2. Do NOT author any JSON. The only goal is to land JSX on disk.
 
 ### Phase 3a — Resolve Tailwind (one shell command)
 
 ```
-scripts/resolve-tailwind.sh {work}/jsx
+.claude/skills/figma-to-json-tw-v2/scripts/resolve-tailwind.sh {work}/jsx
 ```
 
 The resolver picks up every `.jsx` file in the directory — `frame-desktop.jsx`, `frame-mobile.jsx`, and any `section-{N}-{breakpoint}.jsx` from Phase 2's fallback — and produces a matching `.inlined.jsx` for each. It doesn't care about the naming convention.
@@ -181,7 +181,7 @@ This is the only time the resolver runs. From here on, only `.inlined.jsx` files
 
 **Before authoring any JSON, write a plan.** This phase locks in every interpretive decision in one place, surfaces ambiguity for review, and makes Phase 3c nearly mechanical.
 
-**Read `references/json-format.md` once now** — it defines the exact shape of every primitive. You'll reference it as you plan.
+**Read `.claude/skills/figma-to-json-tw-v2/references/json-format.md` once now** — it defines the exact shape of every primitive. You'll reference it as you plan.
 
 Start the plan with an email-level header that captures what used to live in the pre-scan:
 
@@ -319,12 +319,12 @@ json.dump(spec, open('{outputs}/{email-name}-spec.json', 'w'), indent=2)
 "
 ```
 
-See `references/json-format.md` for the exact shape of every field. It is the contract between this skill and `json-to-html`.
+See `.claude/skills/figma-to-json-tw-v2/references/json-format.md` for the exact shape of every field. It is the contract between this skill and `json-to-html`.
 
 Run the validator:
 
 ```
-python3 scripts/validate.py {outputs}/{email-name}-spec.json
+python3 .claude/skills/figma-to-json-tw-v2/scripts/validate.py {outputs}/{email-name}-spec.json
 ```
 
 The validator catches:
@@ -355,7 +355,7 @@ Warnings can be addressed at the user's discretion — surface them but don't bl
 | Output JSON only                                                                        | Render HTML — that's the `json-to-html` skill's job                |
 | Use the section's Figma name as-is                                                      | Categorize sections into predefined types ("header", "CTA module") |
 | Transcribe all text word-for-word from Figma                                            | Paraphrase, summarize, or edit any text the spec captures          |
-| Run `resolve-tailwind.sh` once after Phase 2 and read `.inlined.jsx` files for styling  | Read raw `.jsx` files for styling, or skip the resolver            |
+| Run `.claude/skills/figma-to-json-tw-v2/scripts/resolve-tailwind.sh` once after Phase 2 and read `.inlined.jsx` files for styling  | Read raw `.jsx` files for styling, or skip the resolver            |
 | Flag any unresolved class in `meta.openQuestions`                                       | Drop unresolved classes silently                                   |
 | Default to `mobile.preserveWidth: true`                                                 | Default to fluid expansion on mobile                               |
 | Capture exactly what Figma shows                                                        | Make design decisions (changing colors, adjusting spacing)         |

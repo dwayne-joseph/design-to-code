@@ -23,7 +23,7 @@ The flow is therefore:
 
 This skill should run in a **separate conversation** from `figma-to-json-tw`. The JSON spec persists on disk — the user uploads it or points at it. Don't ask the user to paste the JSON into chat; read it from disk.
 
-**Rule 1 — Lookup-on-demand for references.** Don't read `rendering-patterns.md` (33KB) or `css-bank.md` (15KB) in full upfront. Plan the email first (Step 3 below), then look up only the patterns and classes the plan calls out. By the time you start rendering, references are already cached and you're in pure execution mode.
+**Rule 1 — Lookup-on-demand for references.** Don't read `.claude/skills/json-to-html-v2/references/rendering-patterns.md` (33KB) or `.claude/skills/json-to-html-v2/references/css-bank.md` (15KB) in full upfront. Plan the email first (Step 3 below), then look up only the patterns and classes the plan calls out. By the time you start rendering, references are already cached and you're in pure execution mode.
 
 **Rule 2 — Don't re-read reference files already in context.** If a reference was read earlier in this conversation, don't read it again.
 
@@ -44,7 +44,7 @@ This skill should run in a **separate conversation** from `figma-to-json-tw`. Th
 # Step 1 — Read the inputs
 
 1. The JSON spec at `{spec}`. Confirm `specVersion` starts with `2.` — if not, halt and tell the user the format is incompatible.
-2. The JSON format reference — at `{figma-skill-path}/references/json-format.md` — so you know what every field means. Read this once; you'll need it.
+2. The JSON format reference — at `.claude/skills/figma-to-json-tw-v2/references/json-format.md` — so you know what every field means. Read this once; you'll need it.
 3. **Do NOT read `rendering-patterns.md` or `css-bank.md` yet.** Those get looked up on demand during planning.
 
 Expect placeholder values in the spec — Figma-hosted image URLs, `"#"` hrefs, and placeholder alias strings are normal. Render them as-is into their respective attributes; production swaps them downstream. Don't flag or warn about placeholders in the delivery summary.
@@ -62,7 +62,7 @@ Walk the `sections` array. For each section, classify by primitive content and r
 | Vertical divider between columns          | `border-left` on the `<th>`, paired with `border-none` class to remove on mobile                         |
 | Element visible on desktop only           | `.hide` class on the wrapping element                                                                    |
 | Element visible on mobile only            | `.showMob` with inline `display: none` on desktop                                                        |
-| Background image with live text           | VML block from `references/vml-background.html`                                                          |
+| Background image with live text           | VML block from `.claude/skills/json-to-html-v2/references/vml-background.html`                           |
 
 **No `<ul>`, `<ol>`, `<li>`.** Build lists as table rows with a bullet cell and a content cell.
 
@@ -76,14 +76,14 @@ Before writing any HTML, write `{plan}` covering every section. For each section
 
 1. **Section ID and source structure** — from JSON: outerPadding? background? padding? Which primitives, in what order?
 2. **HTML shape** — the outer wrapper choice (no wrapper / single-cell wrapper / nested outerPadding wrapper) and the primitive-by-primitive shape inside.
-3. **CSS bank classes used** — every utility class this section needs (`block-cell`, `padR0`, `padB24`, `border-none`, `hide`, `showMob`, etc.). Look these up in `references/css-bank.md` *now* (first time you hit a class you don't know). If a class is missing, create it following the bank's naming conventions and note "NEW" in the plan.
+3. **CSS bank classes used** — every utility class this section needs (`block-cell`, `padR0`, `padB24`, `border-none`, `hide`, `showMob`, etc.). Look these up in `.claude/skills/json-to-html-v2/references/css-bank.md` *now* (first time you hit a class you don't know). If a class is missing, create it following the bank's naming conventions and note "NEW" in the plan.
 4. **New classes needed** — any class the bank doesn't have. Defining these in the plan keeps the `<style>` assembly step honest.
 5. **Annotation transforms** — does this section have `stripBrackets`, `stripColors`, or `recolorMap` matches? List the affected runs.
 6. **Responsive line breaks** — text runs containing `\n` that exist because the desktop column is narrow. List each. Plan the parallel-block pattern (NOT `<br class="hideBR">`, which doesn't survive style-strip).
 7. **Phone numbers** — list every phone-number run in this section. Plan the `tel:` link wrapper and which CSS class (`.footerPhoneMobile` for footer phones, `.mobilePhoneISI` for ISI phones).
 8. **Open questions or approximations** — e.g., "JSON wants 50px top padding on mobile but bank's closest is `.padT48`". Surface in delivery summary.
 
-Lookup discipline: open `references/rendering-patterns.md` for the specific primitive patterns the plan calls out — image, textBlock, button, list, multiColumn, spacer, VML background. Read only those sections, not the whole file.
+Lookup discipline: open `.claude/skills/json-to-html-v2/references/rendering-patterns.md` for the specific primitive patterns the plan calls out — image, textBlock, button, list, multiColumn, spacer, VML background. Read only those sections, not the whole file.
 
 After all sections are planned, audit the plan:
 
@@ -97,10 +97,10 @@ The render plan is the contract for Step 5. Once it's written, do not deviate.
 
 # Step 4 — Setup base template and assemble CSS
 
-1. Read `references/base-template.html` — copy as the starting point for `{outputs}/{email-name}.html`.
+1. Read `.claude/skills/json-to-html-v2/references/base-template.html` — copy as the starting point for `{outputs}/{email-name}.html`.
 2. Replace `PREVIEW TEXT HERE` with `meta.previewText` from the spec.
 3. Assemble the `<style>` block:
-   - Always include the **base resets** from `references/css-bank.md` — required on every email.
+   - Always include the **base resets** from `.claude/skills/json-to-html-v2/references/css-bank.md` — required on every email.
    - Pull each utility class the render plan lists (and only those — no unused classes).
    - Add any NEW classes from the plan, following the bank's naming conventions.
    - Wrap utility classes inside the `@media` block.
@@ -121,7 +121,7 @@ The render plan is the contract for Step 5. Once it's written, do not deviate.
 
 Walk the `sections` array in order. For each section, execute the plan entry — do not re-decide HTML shape or CSS classes.
 
-**Ground rules** (Section 1 of `references/rendering-patterns.md`):
+**Ground rules** (Section 1 of `.claude/skills/json-to-html-v2/references/rendering-patterns.md`):
 
 | Rule                                                  | Why                                                     |
 | ----------------------------------------------------- | ------------------------------------------------------- |
@@ -147,7 +147,7 @@ Never let a scaffolding color reach the rendered HTML.
 
 When a section has non-zero padding or a background color, **one outer cell owns the entire section's padding and background.** Inner content rows carry no section-level padding and no background. When a section has `outerPadding`, use two nested wrappers — the outer for spacing, the inner for background + padding.
 
-See `references/rendering-patterns.md`:
+See `.claude/skills/json-to-html-v2/references/rendering-patterns.md`:
 
 - "Section wrapper — standard (single-layer)" — background + padding on one cell
 - "Section wrapper — nested" — the `outerPadding` case
@@ -161,9 +161,9 @@ The HTML validator flags the forbidden pattern: two or more consecutive content 
 - If the section has `background` or non-zero `padding` (no `outerPadding`) — wrap nodes in a `<tr><td bgcolor="...">` outer cell with inner `<table width="100%">`.
 - If no background and no padding — emit nodes as `<tr>` rows directly in the outer content table.
 
-**Per-primitive HTML** — read the matching section of `references/rendering-patterns.md` for each primitive type the plan uses. The patterns are guides for the correct structure, attributes, and rules — adapt them to the JSON values without breaking the rules (tables only, all CSS inline, no ghost tables, no `<li>`, `<th>` for responsive columns).
+**Per-primitive HTML** — read the matching section of `.claude/skills/json-to-html-v2/references/rendering-patterns.md` for each primitive type the plan uses. The patterns are guides for the correct structure, attributes, and rules — adapt them to the JSON values without breaking the rules (tables only, all CSS inline, no ghost tables, no `<li>`, `<th>` for responsive columns).
 
-**Responsive line breaks** — use the parallel desktop/mobile block pattern from `references/rendering-patterns.md` for every `\n` the plan flagged. Duplicate the text into two `<span>` wrappers: one with the break (shown on desktop, hidden on mobile) and one without (hidden on desktop, shown on mobile). Do NOT use `<br class="hideBR">` — it doesn't survive style-strip.
+**Responsive line breaks** — use the parallel desktop/mobile block pattern from `.claude/skills/json-to-html-v2/references/rendering-patterns.md` for every `\n` the plan flagged. Duplicate the text into two `<span>` wrappers: one with the break (shown on desktop, hidden on mobile) and one without (hidden on desktop, shown on mobile). Do NOT use `<br class="hideBR">` — it doesn't survive style-strip.
 
 **Phone numbers** — every phone number gets `<a href="tel:...">` with all formatting stripped from the `tel:` value (digits and country code only):
 
@@ -180,7 +180,7 @@ Apply the planned class (`.footerPhoneMobile` or `.mobilePhoneISI`).
 Run the validator:
 
 ```
-python3 scripts/validate-html.py {outputs}/{email-name}.html {spec}
+python3 .claude/skills/json-to-html-v2/scripts/validate-html.py {outputs}/{email-name}.html {spec}
 ```
 
 Checks: forbidden tags, missing image attributes, missing link attributes, missing `mso-line-height-rule: exactly` on text cells, scaffolding color leakage, VML wrapping on click-tracked elements, individual padding sides used inline.
@@ -205,7 +205,7 @@ Write the final HTML to `{outputs}/{email-name}.html`. Tell the user:
 **Structure:**
 
 - [ ] Render plan written before any HTML
-- [ ] Base template from `references/base-template.html`
+- [ ] Base template from `.claude/skills/json-to-html-v2/references/base-template.html`
 - [ ] `<style>` block: base resets + only the utility classes the plan listed
 - [ ] MSO block included after `</style>`
 - [ ] Zero `<div>` for layout
