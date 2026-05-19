@@ -90,7 +90,7 @@ These exist because Outlook ignores certain CSS properties and only reads the HT
 
 ## Background images
 
-- Requires VML for Outlook. Read `references/vml-background.html` for the full boilerplate.
+- Requires VML for Outlook. Read `.claude/skills/json-to-html-v2/references/vml-background.html` for the full boilerplate.
 - Image URL in 3 places: `background` attribute, `url()` in style, `<v:image>` src.
 - Inner content in a `<table>` inside the VML block.
 
@@ -103,7 +103,7 @@ These exist because Outlook ignores certain CSS properties and only reads the HT
 
 ## CSS utility classes
 
-- All mobile overrides come from `references/css-bank.md`.
+- All mobile overrides come from `.claude/skills/json-to-html-v2/references/css-bank.md`.
 - Only include classes actually used in the email's `<style>` block.
 - If a design needs a class that doesn't exist, create it following the CSS bank naming conventions.
 - Never invent arbitrary class names — follow the bank's patterns.
@@ -629,7 +629,7 @@ A thin full-width colored line (brand accent, section divider, etc.).
 
 ## Example: Background image with live text
 
-Read `references/vml-background.html` for the full VML boilerplate. The key points:
+Read `.claude/skills/json-to-html-v2/references/vml-background.html` for the full VML boilerplate. The key points:
 
 - Image URL in 3 places: `background` attribute, `url()` in style, `<v:image>` src
 - Height and width in multiple VML attributes

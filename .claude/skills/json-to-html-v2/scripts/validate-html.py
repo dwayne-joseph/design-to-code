@@ -324,7 +324,7 @@ def validate_html(html: str, scaffolding_colors: Set[str]) -> List[dict]:
                         f"padding AND the same bgcolor. The section's padding and "
                         f"background must be hoisted to a single outer <td> wrapper "
                         f"with inner content rows that carry no section-level padding "
-                        f"or bgcolor. See Step 7 of SKILL.md for the required pattern."
+                        f"or bgcolor. See .claude/skills/json-to-html-v2/SKILL.md Step 5 for the required pattern."
                     )
                 })
             # Start a new run if this cell qualifies
@@ -348,7 +348,7 @@ def validate_html(html: str, scaffolding_colors: Set[str]) -> List[dict]:
                 f"padding AND the same bgcolor. The section's padding and "
                 f"background must be hoisted to a single outer <td> wrapper "
                 f"with inner content rows that carry no section-level padding "
-                f"or bgcolor. See Step 7 of SKILL.md for the required pattern."
+                f"or bgcolor. See .claude/skills/json-to-html-v2/SKILL.md Step 5 for the required pattern."
             )
         })
 

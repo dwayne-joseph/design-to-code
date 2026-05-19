@@ -132,7 +132,7 @@ Without the desktop defaults, the mobile `<span>` has no inline hiding and will 
 | `.hideOnMob` | `display: none !important; mso-hide: all !important; max-height: 0 !important; overflow: hidden !important;` | Hides INLINE content on mobile (use on `<span>` wrapping desktop-only inline elements, e.g. the desktop variant of a responsive line-break pair). Pair with inline `display: inline;` on desktop. |
 | `.showOnMob` | `display: inline !important; mso-hide: none !important; max-height: none !important;` | Reveals INLINE content on mobile (use on `<span>` wrapping mobile-only inline elements). Pair with inline `display: none; mso-hide: all; max-height: 0; overflow: hidden;` on desktop. |
 
-Use `.hideOnMob` / `.showOnMob` for inline content (spans inside a sentence — e.g., the responsive line-break pattern in `references/rendering-patterns.md`). Use `.hide` / `.showMob` for block content (entire rows, images, tables). Don't mix them — block classes use `display: block` which corrupts inline flow.
+Use `.hideOnMob` / `.showOnMob` for inline content (spans inside a sentence — e.g., the responsive line-break pattern in `.claude/skills/json-to-html-v2/references/rendering-patterns.md`). Use `.hide` / `.showMob` for block content (entire rows, images, tables). Don't mix them — block classes use `display: block` which corrupts inline flow.
 
 ### Width
 

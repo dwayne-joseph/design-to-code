@@ -104,7 +104,7 @@ Sections are flat. They don't nest. If a Figma file has nested groupings, flatte
 
 ## Primitives
 
-These are the visual building blocks. Each one renders to a known HTML pattern (documented in the coding skill's `references/rendering-patterns.md`).
+These are the visual building blocks. Each one renders to a known HTML pattern (documented in the coding skill's `.claude/skills/json-to-html-v2/references/rendering-patterns.md`).
 
 Every primitive node has a `type` field that names which primitive it is.
 
