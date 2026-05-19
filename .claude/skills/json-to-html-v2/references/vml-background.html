@@ -1,0 +1,39 @@
+<!--
+  VML Background Image Block
+  
+  Before using, replace these placeholders:
+    IMAGE-URL     → actual image URL (appears in 3 places — update all 3)
+    400           → actual pixel height from Figma (appears in multiple places)
+    600           → actual pixel width (appears in multiple places)
+    #000000       → actual fallback background color
+    "Live text"   → actual overlay content
+-->
+<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 600px;">
+  <tr>
+    <td height="400" align="center" valign="top"
+        background="IMAGE-URL"
+        style="background: url('IMAGE-URL') top left / cover no-repeat #000000; background-size: cover; height: 400px; width: 600px;">
+      <!--[if true]>
+      <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false"
+               style="border: 0; display: inline-block; height: 400px; width: 600px;" src="IMAGE-URL" />
+      <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false"
+              style="border: 0; display: inline-block; height: 400px; position: absolute; width: 600px;">
+        <v:fill opacity="0%" color="#000000" />
+        <v:textbox inset="0,0,0,0">
+      <![endif]-->
+      <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 100%;">
+        <tr>
+          <td align="center" height="400" valign="middle" style="height: 400px; font-family: Arial, Helvetica, sans-serif; font-size: 24px; line-height: 30px; mso-line-height-rule: exactly; color: #ffffff;">
+            Live text over the image
+          </td>
+        </tr>
+      </table>
+      <!--[if true]>
+        </v:textbox>
+        </v:fill>
+      </v:rect>
+      </v:image>
+      <![endif]-->
+    </td>
+  </tr>
+</table>
